@@ -6,6 +6,9 @@ RUN apt-get update && apt-get install -y \
     imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
+# Create temp directory with proper permissions
+RUN mkdir -p /app/temp && chmod 777 /app/temp
+
 # Set working directory
 WORKDIR /app
 

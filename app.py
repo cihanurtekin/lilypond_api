@@ -10,6 +10,9 @@ import base64
 import traceback
 import sys
 
+# Define absolute path for temp directory
+TEMP_DIR = Path(os.path.dirname(os.path.abspath(__file__))) / 'temp'
+
 app = FastAPI(
     title="LilyPond API",
     description="API for converting music notation to images",
@@ -58,13 +61,12 @@ async def convert_to_image(data: LilyPondInput):
     
     try:
         # Create temporary file paths
-        temp_dir = Path('temp')
-        temp_dir.mkdir(exist_ok=True)
+        TEMP_DIR.mkdir(exist_ok=True)
         
         base_name = 'output'
-        lily_file = temp_dir / f'{base_name}.ly'
-        pdf_file = temp_dir / f'{base_name}.pdf'
-        png_file = temp_dir / f'{base_name}.png'
+        lily_file = TEMP_DIR.absolute() / f'{base_name}.ly'
+        pdf_file = TEMP_DIR.absolute() / f'{base_name}.pdf'
+        png_file = TEMP_DIR.absolute() / f'{base_name}.png'
 
         print(f"Processing request with content: {data.content}")  # Debug log
 
@@ -80,7 +82,7 @@ async def convert_to_image(data: LilyPondInput):
         # Run LilyPond with full error capture
         print("Running LilyPond...")  # Debug log
         process = subprocess.run(
-            ['lilypond', '--pdf', '-o', str(temp_dir / base_name), str(lily_file)],
+            ['lilypond', '--pdf', '-o', str(TEMP_DIR.absolute() / base_name), str(lily_file)],
             capture_output=True,
             text=True
         )
@@ -160,13 +162,12 @@ async def convert_txt_to_image(
     
     try:
         # Create temporary file paths
-        temp_dir = Path('temp')
-        temp_dir.mkdir(exist_ok=True)
+        TEMP_DIR.mkdir(exist_ok=True)
         
         base_name = 'output'
-        lily_file = temp_dir / f'{base_name}.ly'
-        pdf_file = temp_dir / f'{base_name}.pdf'
-        png_file = temp_dir / f'{base_name}.png'
+        lily_file = TEMP_DIR.absolute() / f'{base_name}.ly'
+        pdf_file = TEMP_DIR.absolute() / f'{base_name}.pdf'
+        png_file = TEMP_DIR.absolute() / f'{base_name}.png'
 
         print(f"Processing file: {file.filename}")  # Debug log
 
@@ -186,7 +187,7 @@ async def convert_txt_to_image(
         # Run LilyPond with full error capture
         print("Running LilyPond...")  # Debug log
         process = subprocess.run(
-            ['lilypond', '--pdf', '-o', str(temp_dir / base_name), str(lily_file)],
+            ['lilypond', '--pdf', '-o', str(TEMP_DIR.absolute() / base_name), str(lily_file)],
             capture_output=True,
             text=True
         )
@@ -260,13 +261,12 @@ async def convert_binary_to_image(data: BinaryInput):
     
     try:
         # Create temporary file paths
-        temp_dir = Path('temp')
-        temp_dir.mkdir(exist_ok=True)
+        TEMP_DIR.mkdir(exist_ok=True)
         
         base_name = 'output'
-        lily_file = temp_dir / f'{base_name}.ly'
-        pdf_file = temp_dir / f'{base_name}.pdf'
-        png_file = temp_dir / f'{base_name}.png'
+        lily_file = TEMP_DIR.absolute() / f'{base_name}.ly'
+        pdf_file = TEMP_DIR.absolute() / f'{base_name}.pdf'
+        png_file = TEMP_DIR.absolute() / f'{base_name}.png'
 
         print("Processing content")  # Debug log
 
@@ -288,9 +288,10 @@ async def convert_binary_to_image(data: BinaryInput):
         # Run LilyPond with full error capture
         print("Running LilyPond...")  # Debug log
         process = subprocess.run(
-            ['lilypond', '--pdf', '-o', str(temp_dir / base_name), str(lily_file)],
+            ['lilypond', '--pdf', '-o', str(TEMP_DIR.absolute() / base_name), str(lily_file.absolute())],
             capture_output=True,
-            text=True
+            text=True,
+            cwd=str(TEMP_DIR.absolute())  # Set working directory explicitly
         )
         if process.returncode != 0:
             error_msg = f"LilyPond error:\nStdout: {process.stdout}\nStderr: {process.stderr}"
