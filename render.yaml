@@ -1,1 +1,6 @@
- 
+services:
+  - type: web
+    name: lilypond-api
+    env: docker
+    buildCommand: docker build -t lilypond-api .
+    startCommand: docker run -p $PORT:$PORT lilypond-api 
