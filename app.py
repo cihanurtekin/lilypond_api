@@ -11,7 +11,7 @@ import traceback
 import sys
 
 # Define absolute path for temp directory
-TEMP_DIR = Path('/app/temp')
+TEMP_DIR = Path(os.getenv('TEMP_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp')))
 
 app = FastAPI(
     title="LilyPond API",
