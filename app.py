@@ -293,20 +293,30 @@ async def convert_binary_to_image(data: BinaryInput):
 
         # Run LilyPond with full error capture
         print("Running LilyPond...")  # Debug log
+        print(f"Current directory: {os.getcwd()}")  # Debug log
+        print(f"File exists before LilyPond: {lily_file.exists()}")  # Debug log
+        print(f"File contents:\n{lily_file.read_text()}")  # Debug log
+        
         process = subprocess.run(
-            ['lilypond', '--pdf', 
-             '--output', str(TEMP_DIR.absolute()), 
-             '--include', str(TEMP_DIR.absolute()),
+            ['lilypond',
+             '--pdf',
+             '-dbackend=eps',
+             '-o', str(TEMP_DIR.absolute() / 'output'),
              str(lily_file.absolute())
             ],
             capture_output=True,
             text=True,
             cwd=str(TEMP_DIR.absolute())
         )
+        
         if process.returncode != 0:
             error_msg = f"LilyPond error:\nStdout: {process.stdout}\nStderr: {process.stderr}"
             print(error_msg)  # Debug log
             raise Exception(error_msg)
+            
+        print(f"PDF exists after LilyPond: {pdf_file.exists()}")  # Debug log
+        if pdf_file.exists():
+            print(f"PDF size: {os.path.getsize(pdf_file)}")  # Debug log
 
         # Check if ImageMagick is installed
         convert_check = subprocess.run(['which', 'convert'], capture_output=True, text=True)
@@ -316,7 +326,12 @@ async def convert_binary_to_image(data: BinaryInput):
         # Convert PDF to PNG with full error capture
         print("Converting PDF to PNG...")  # Debug log
         process = subprocess.run(
-            ['convert', '-density', '300', str(pdf_file), str(png_file)],
+            ['convert',
+             '-density', '300',
+             '-quality', '100',
+             str(pdf_file.absolute()),
+             str(png_file.absolute())
+            ],
             capture_output=True,
             text=True
         )
