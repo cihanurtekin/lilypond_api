@@ -7,7 +7,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create temp directory with proper permissions
-RUN mkdir -p /app/temp && chmod 777 /app/temp
+RUN mkdir -p /app/temp && \
+    chmod 777 /app/temp && \
+    chown -R nobody:nogroup /app/temp
 
 # Set working directory
 WORKDIR /app
@@ -20,6 +22,10 @@ RUN pip install -r requirements.txt
 
 # Copy application
 COPY . .
+
+# Ensure temp directory permissions after copy
+RUN chmod 777 /app/temp && \
+    chown -R nobody:nogroup /app/temp
 
 # Run the application
 CMD uvicorn app:app --host 0.0.0.0 --port $PORT 

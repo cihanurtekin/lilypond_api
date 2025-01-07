@@ -11,7 +11,7 @@ import traceback
 import sys
 
 # Define absolute path for temp directory
-TEMP_DIR = Path(os.path.dirname(os.path.abspath(__file__))) / 'temp'
+TEMP_DIR = Path('/app/temp')
 
 app = FastAPI(
     title="LilyPond API",
@@ -43,10 +43,16 @@ class BinaryInput(BaseModel):
 def create_lily_file(content: str, filename: Path, version: str = "2.24.0") -> None:
     try:
         lily_content = f'\\version "{version}"\n'
-        lily_content += f'{content}\n'  # Just add the raw content
+        lily_content += f'{content}\n'
+        
+        # Ensure directory exists and has proper permissions
+        filename.parent.mkdir(parents=True, exist_ok=True)
         
         with open(filename, 'w') as f:
             f.write(lily_content)
+            
+        # Set proper permissions
+        os.chmod(filename, 0o666)
     except Exception as e:
         raise Exception(f"Error creating LilyPond file: {str(e)}")
 
@@ -288,10 +294,14 @@ async def convert_binary_to_image(data: BinaryInput):
         # Run LilyPond with full error capture
         print("Running LilyPond...")  # Debug log
         process = subprocess.run(
-            ['lilypond', '--pdf', '-o', str(TEMP_DIR.absolute() / base_name), str(lily_file.absolute())],
+            ['lilypond', '--pdf', 
+             '--output', str(TEMP_DIR.absolute()), 
+             '--include', str(TEMP_DIR.absolute()),
+             str(lily_file.absolute())
+            ],
             capture_output=True,
             text=True,
-            cwd=str(TEMP_DIR.absolute())  # Set working directory explicitly
+            cwd=str(TEMP_DIR.absolute())
         )
         if process.returncode != 0:
             error_msg = f"LilyPond error:\nStdout: {process.stdout}\nStderr: {process.stderr}"
